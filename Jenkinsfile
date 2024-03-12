@@ -1,38 +1,48 @@
 pipeline {
     agent any
+
     stages {
         stage('Clone repository') {
             steps {
-                git url: 'https://github.com/HamdaMustafa/MLOPSTASK3.git', branch: 'main'
+                // Clone the repository
+                checkout scm
             }
         }
+
         stage('Install dependencies') {
             steps {
-                script {
-                    // Use sh for Linux/Mac and bat for Windows
-                    bat 'pip install -r requirements.txt'
-                }
+                // Install the required dependencies
+                bat 'pip install --upgrade pip'
+                bat 'pip install -r requirements.txt'
             }
         }
-        stage('Execute test.py') {
+
+        stage('Run tests') {
             steps {
-                script {
-                    bat 'python test.py'
-                }
+                // Execute the tests
+                bat 'pytest test.py'
             }
         }
+
         stage('Deploy') {
             steps {
                 script {
-                    if (env.BRANCH_NAME == 'main') {
-                        echo 'Deploying to production'
-                        
-                    } else {
-                        echo 'Deploying to UAT'
-                        
-                    }
+                    deploy(env.BRANCH_NAME)
                 }
             }
-        }
-    }
+        }
+    }
+}
+
+def deploy(String branchName) {
+    if (branchName == 'main') {
+        echo "Deploying to production"
+       // deploy
+    } else {
+        echo "Deploying to UAT"
+    }
+    // else {
+    //     echo "Deploying to a non-production/non-UAT branch: ${branchName}"
+    //    //deploy
+    // }
 }
